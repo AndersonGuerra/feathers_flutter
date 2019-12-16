@@ -1,36 +1,70 @@
 import 'package:flutter/material.dart';
-import 'package:adhara_socket_io/adhara_socket_io.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class Home extends StatelessWidget {
-  SocketIOManager manager = SocketIOManager();
-  SocketIO socket;
+  final socket = IO.io('http://172.16.42.142:3030/', <String, dynamic>{
+    'transports': ['websocket'],
+    // 'extraHeaders': {'foo': 'bar'} // optional
+  });
     
   @override
   Widget build(BuildContext context) {
+    socket.connect();
+    print("mexendo no listener");
+
+    socket.on("messages created", (msg){
+      print(msg);
+      print("nice");
+    });
     return Scaffold(
       appBar: AppBar(title: Text("LabControl"), centerTitle: true,),
       body: Container(
         child: Column(
           children: <Widget>[
-            Column(
-              children: <Widget>[
-                MaterialButton(
-                  color: Colors.blue,
-                  child: Text("Login"),
-                  onPressed: () async {
-                    socket = await manager.createInstance(SocketOptions("http://172.16.42.142:3030/"));
-                    socket.connect();
-                    socket.onConnect((data) async {
-                      var result = await socket.emitWithAck("find", ["messages"]);
-                      print(result);
-                      print(await socket.isConnected());
-                      socket.on("messages created", (event){
-                        print(event);
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: <Widget>[
+                  MaterialButton(
+                    color: Colors.blue,
+                    child: Text("Find"),
+                    onPressed: () {
+                      socket.emitWithAck("find", ["messages"], ack: (a){
+                        print(a);
                       });
-                    });
-                  },
-                ),
-              ],
+                    },
+                  ),
+                  MaterialButton(
+                    color: Colors.purple,
+                    child: Text("Create"),
+                    onPressed: (){
+                      socket.emitWithAck("create", ["messages", {"text": "nossa"}], ack: (a){
+                        print("criou");
+                      });
+                    },
+                  ),
+                  MaterialButton(
+                    color: Colors.green,
+                    child: Text("onCreated"),
+                    onPressed: (){
+                      socket.on("messages created", (msg){
+                        print(msg);
+                        print("nice");
+                      });
+                    },
+                  ),
+                  MaterialButton(
+                    color: Colors.red,
+                    child: Text("onRemoved"),
+                    onPressed: (){
+                      socket.on("messages removed", (msg){
+                        print(msg);
+                        print("nice");
+                      });
+                    },
+                  )
+                ],
+              ),
             ),
             
           ],
