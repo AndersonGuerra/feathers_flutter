@@ -10,14 +10,12 @@ class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     socket.connect();
-    print("mexendo no listener");
-
-    socket.on("messages created", (msg){
-      print(msg);
-      print("nice");
+    socket.on("connect", (_) {
+      socket.on("messages created", (msg)=>print(msg));
     });
+
     return Scaffold(
-      appBar: AppBar(title: Text("LabControl"), centerTitle: true,),
+      appBar: AppBar(title: Text("Testing"), centerTitle: true,),
       body: Container(
         child: Column(
           children: <Widget>[
@@ -37,9 +35,9 @@ class Home extends StatelessWidget {
                   MaterialButton(
                     color: Colors.purple,
                     child: Text("Create"),
-                    onPressed: (){
+                    onPressed: (){                   
                       socket.emitWithAck("create", ["messages", {"text": "nossa"}], ack: (a){
-                        print("criou");
+                        print(a);
                       });
                     },
                   ),
@@ -47,20 +45,14 @@ class Home extends StatelessWidget {
                     color: Colors.green,
                     child: Text("onCreated"),
                     onPressed: (){
-                      socket.on("messages created", (msg){
-                        print(msg);
-                        print("nice");
-                      });
+                      socket.on("messages created", (msg)=>print(msg));
                     },
                   ),
                   MaterialButton(
                     color: Colors.red,
                     child: Text("onRemoved"),
                     onPressed: (){
-                      socket.on("messages removed", (msg){
-                        print(msg);
-                        print("nice");
-                      });
+                      socket.on("messages removed", (msg)=>print(msg));
                     },
                   )
                 ],
